@@ -3,6 +3,9 @@ import "@/global.css";
 import { useEffect } from "react";
 import { useFonts } from "expo-font";
 
+SplashScreen.preventAutoHideAsync();
+// Keep the splash screen visible until we manually hide it
+
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     "sans-regular": require("../assets/fonts/PlusJakartaSans-Regular.ttf"),
