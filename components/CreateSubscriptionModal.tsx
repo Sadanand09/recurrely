@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import dayjs from "dayjs";
 import { icons } from "@/constants/icons";
+import { posthog } from "@/src/config/posthog";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -116,6 +117,13 @@ const CreateSubscriptionModal = ({
       color: category ? CATEGORY_COLORS[category] : "#d4d4d4",
     } as unknown as Subscription;
     onSubmit(newSub);
+
+    posthog.capture("subscription_created", {
+      subscription_name: name.trim(),
+      subscription_price: parsedPrice,
+      subscription_billing: frequency,
+      subscription_category: category ?? null,
+    });
     resetForm();
   };
 
