@@ -1,13 +1,43 @@
-import { SplashScreen, Stack } from "expo-router";
+import { ClerkProvider, useAuth } from "@clerk/expo";
+import { tokenCache } from "@clerk/expo/token-cache";
+import { SplashScreen, Stack, useRouter, useSegments } from "expo-router";
 import "@/global.css";
 import { useEffect } from "react";
 import { useFonts } from "expo-font";
 
 SplashScreen.preventAutoHideAsync();
-// Keep the splash screen visible until we manually hide it
+
+const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
+
+if (!publishableKey) {
+  throw new Error(
+    "Missing EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY in your .env file"
+  );
+}
+
+// Sits inside ClerkProvider so it can call useAuth, useSegments, useRouter
+function InitialLayout() {
+  const { isSignedIn, isLoaded } = useAuth();
+  const segments = useSegments();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoaded) return;
+
+    const inAuthGroup = segments[0] === "(auth)";
+
+    if (!isSignedIn && !inAuthGroup) {
+      router.replace("/(auth)/sign-in");
+    } else if (isSignedIn && inAuthGroup) {
+      router.replace("/(tabs)");
+    }
+  }, [isSignedIn, isLoaded, segments, router]);
+
+  return <Stack screenOptions={{ headerShown: false }} />;
+}
 
 export default function RootLayout() {
-  const [fontsLoaded] = useFonts({
+  const [fontsLoaded, fontError] = useFonts({
     "sans-regular": require("../assets/fonts/PlusJakartaSans-Regular.ttf"),
     "sans-bold": require("../assets/fonts/PlusJakartaSans-Bold.ttf"),
     "sans-medium": require("../assets/fonts/PlusJakartaSans-Medium.ttf"),
@@ -17,12 +47,16 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    // Hide splash only when both fonts and auth are loaded
-    if (fontsLoaded) {
+    if (fontsLoaded || fontError) {
       SplashScreen.hideAsync();
     }
-  }, [fontsLoaded]);
+  }, [fontsLoaded, fontError]);
 
-  if (!fontsLoaded) return null; // Keep splash screen visible until fonts are loaded
-  return <Stack screenOptions={{ headerShown: false }} />;
+  if (!fontsLoaded && !fontError) return null;
+
+  return (
+    <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
+      <InitialLayout />
+    </ClerkProvider>
+  );
 }

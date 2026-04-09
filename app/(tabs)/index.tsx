@@ -1,9 +1,10 @@
 import "@/global.css";
+import { useUser } from "@clerk/expo";
 import { FlatList, Image, Pressable, Text, View } from "react-native";
 import { SafeAreaView as RNSafeAreaView } from "react-native-safe-area-context";
 import { styled } from "nativewind";
 import images from "@/constants/images";
-import { HOME_BALANCE } from "@/constants/data";
+import { HOME_BALANCE, HOME_SUBSCRIPTIONS, UPCOMING_SUBSCRIPTIONS } from "@/constants/data";
 import { icons } from "@/constants/icons";
 import { formatCurrency } from "@/lib/utils";
 import dayjs from "dayjs";
@@ -11,14 +12,24 @@ import ListHeading from "@/components/ListHeading";
 import UpcomingSubscriptionCard from "@/components/UpcomingSubscriptionCard";
 import SubscriptionCard from "@/components/SubscriptionCard";
 import { useState } from "react";
+
 const SafeAreaView = styled(RNSafeAreaView);
 
 export default function App() {
   const { user } = useUser();
-  const [expandedSubscriptionId, setExpandedSubscriptionId] = useState<
-    string | null
-  >(null);
+  const [expandedSubscriptionId, setExpandedSubscriptionId] = useState<string | null>(null);
 
+  const displayName =
+    user?.firstName ??
+    user?.emailAddresses?.[0]?.emailAddress?.split("@")[0] ??
+    "there";
+
+  const upcomingSubscriptions = UPCOMING_SUBSCRIPTIONS;
+  const subscriptions = HOME_SUBSCRIPTIONS;
+
+  const handleSubscriptionPress = (item: Subscription) => {
+    setExpandedSubscriptionId((prev) => (prev === item.id ? null : item.id));
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-background p-5">
@@ -33,7 +44,7 @@ export default function App() {
                   }
                   className="home-avatar"
                 />
-                <Text className="home-user-name">{displayName}</Text>
+                <Text className="home-user-name">Hi, {displayName}</Text>
               </View>
 
               <Pressable>
@@ -93,7 +104,6 @@ export default function App() {
         }
         contentContainerClassName="pb-30"
       />
-
     </SafeAreaView>
   );
 }
