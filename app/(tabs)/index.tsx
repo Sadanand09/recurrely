@@ -12,11 +12,13 @@ import ListHeading from "@/components/ListHeading";
 import UpcomingSubscriptionCard from "@/components/UpcomingSubscriptionCard";
 import SubscriptionCard from "@/components/SubscriptionCard";
 import { useState } from "react";
+import { usePostHog } from "posthog-react-native";
 
 const SafeAreaView = styled(RNSafeAreaView);
 
 export default function App() {
   const { user } = useUser();
+  const posthog = usePostHog();
   const [expandedSubscriptionId, setExpandedSubscriptionId] = useState<string | null>(null);
 
   const displayName =
@@ -28,7 +30,19 @@ export default function App() {
   const subscriptions = HOME_SUBSCRIPTIONS;
 
   const handleSubscriptionPress = (item: Subscription) => {
+    const isExpanding = expandedSubscriptionId !== item.id;
     setExpandedSubscriptionId((prev) => (prev === item.id ? null : item.id));
+    if (isExpanding) {
+      posthog.capture("subscription_expanded", {
+        subscription_name: item.name,
+        subscription_category: item.category ?? null,
+        subscription_billing: item.billing,
+      });
+    }
+  };
+
+  const handleAddSubscription = () => {
+    posthog.capture("add_subscription_tapped");
   };
 
   return (
@@ -47,7 +61,7 @@ export default function App() {
                 <Text className="home-user-name">Hi, {displayName}</Text>
               </View>
 
-              <Pressable>
+              <Pressable onPress={handleAddSubscription}>
                 <Image source={icons.add} className="home-add-icon" />
               </Pressable>
             </View>

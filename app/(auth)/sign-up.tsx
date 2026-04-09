@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { SafeAreaView as RNSafeAreaView } from "react-native-safe-area-context";
 import { styled } from "nativewind";
+import { usePostHog } from "posthog-react-native";
 
 const SafeAreaView = styled(RNSafeAreaView);
 
@@ -20,6 +21,7 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export default function SignUp() {
   const { signUp, fetchStatus } = useSignUp();
   const router = useRouter();
+  const posthog = usePostHog();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -69,6 +71,7 @@ export default function SignUp() {
 
       if (error) {
         setFieldErrors({ general: error.message ?? "Something went wrong. Please try again." });
+        posthog.capture("user_sign_up_failed", { error_message: error.message });
         return;
       }
 
@@ -76,6 +79,7 @@ export default function SignUp() {
       const { error: sendError } = await signUp.verifications.sendEmailCode();
       if (sendError) {
         setFieldErrors({ general: sendError.message ?? "Failed to send verification code. Please try again." });
+        posthog.capture("user_sign_up_failed", { error_message: sendError.message });
         return;
       }
 
@@ -84,6 +88,7 @@ export default function SignUp() {
       setFieldErrors({
         general: err?.message ?? "Something went wrong. Please try again.",
       });
+      posthog.capture("user_sign_up_failed", { error_message: err?.message });
     }
   };
 
@@ -105,6 +110,11 @@ export default function SignUp() {
       }
 
       if (signUp.status === "complete") {
+        posthog.identify(email.trim(), {
+          $set: { email: email.trim(), ...(name.trim() ? { name: name.trim() } : {}) },
+          $set_once: { sign_up_date: new Date().toISOString() },
+        });
+        posthog.capture("user_signed_up", { has_name: !!name.trim() });
         await signUp.finalize({
           navigate: ({ decorateUrl }) => {
             const url = decorateUrl("/");

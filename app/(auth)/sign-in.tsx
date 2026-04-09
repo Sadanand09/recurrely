@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { SafeAreaView as RNSafeAreaView } from "react-native-safe-area-context";
 import { styled } from "nativewind";
+import { usePostHog } from "posthog-react-native";
 
 const SafeAreaView = styled(RNSafeAreaView);
 
@@ -20,6 +21,7 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export default function SignIn() {
   const { signIn, fetchStatus } = useSignIn();
   const router = useRouter();
+  const posthog = usePostHog();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -64,10 +66,16 @@ export default function SignIn() {
 
       if (error) {
         setFieldErrors({ general: error.message ?? "Something went wrong. Please try again." });
+        posthog.capture("user_sign_in_failed", { error_message: error.message });
         return;
       }
 
       if (signIn.status === "complete") {
+        posthog.identify(email.trim(), {
+          $set: { email: email.trim() },
+          $set_once: { first_sign_in_date: new Date().toISOString() },
+        });
+        posthog.capture("user_signed_in", { method: "password" });
         await signIn.finalize({
           navigate: ({ decorateUrl }) => {
             const url = decorateUrl("/");
@@ -87,11 +95,13 @@ export default function SignIn() {
         setStep("mfa");
       } else {
         setFieldErrors({ general: "Sign-in could not be completed. Please try again." });
+        posthog.capture("user_sign_in_failed", { error_message: "Sign-in could not be completed" });
       }
     } catch (err: any) {
       setFieldErrors({
         general: err?.message ?? "Something went wrong. Please try again.",
       });
+      posthog.capture("user_sign_in_failed", { error_message: err?.message });
     }
   };
 
@@ -113,6 +123,12 @@ export default function SignIn() {
       }
 
       if (signIn.status === "complete") {
+        posthog.identify(email.trim(), {
+          $set: { email: email.trim() },
+          $set_once: { first_sign_in_date: new Date().toISOString() },
+        });
+        posthog.capture("user_mfa_verified", { method: "email_code" });
+        posthog.capture("user_signed_in", { method: "mfa" });
         await signIn.finalize({
           navigate: ({ decorateUrl }) => {
             const url = decorateUrl("/");
