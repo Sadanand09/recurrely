@@ -4,13 +4,15 @@ import { FlatList, Image, Pressable, Text, View } from "react-native";
 import { SafeAreaView as RNSafeAreaView } from "react-native-safe-area-context";
 import { styled } from "nativewind";
 import images from "@/constants/images";
-import { HOME_BALANCE, HOME_SUBSCRIPTIONS, UPCOMING_SUBSCRIPTIONS } from "@/constants/data";
+import { HOME_BALANCE, UPCOMING_SUBSCRIPTIONS } from "@/constants/data";
+import { useSubscriptions } from "@/context/SubscriptionsContext";
 import { icons } from "@/constants/icons";
 import { formatCurrency } from "@/lib/utils";
 import dayjs from "dayjs";
 import ListHeading from "@/components/ListHeading";
 import UpcomingSubscriptionCard from "@/components/UpcomingSubscriptionCard";
 import SubscriptionCard from "@/components/SubscriptionCard";
+import CreateSubscriptionModal from "@/components/CreateSubscriptionModal";
 import { useState } from "react";
 import { usePostHog } from "posthog-react-native";
 
@@ -20,6 +22,8 @@ export default function App() {
   const { user } = useUser();
   const posthog = usePostHog();
   const [expandedSubscriptionId, setExpandedSubscriptionId] = useState<string | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const { subscriptions, addSubscription } = useSubscriptions();
 
   const displayName =
     user?.firstName ??
@@ -27,7 +31,6 @@ export default function App() {
     "there";
 
   const upcomingSubscriptions = UPCOMING_SUBSCRIPTIONS;
-  const subscriptions = HOME_SUBSCRIPTIONS;
 
   const handleSubscriptionPress = (item: Subscription) => {
     const isExpanding = expandedSubscriptionId !== item.id;
@@ -43,10 +46,26 @@ export default function App() {
 
   const handleAddSubscription = () => {
     posthog.capture("add_subscription_tapped");
+    setModalVisible(true);
+  };
+
+  const handleSubscriptionCreated = (subscription: Subscription) => {
+    addSubscription(subscription);
+    setModalVisible(false);
+    posthog.capture("subscription_created", {
+      subscription_name: subscription.name,
+      subscription_category: subscription.category ?? null,
+      subscription_billing: subscription.billing,
+    });
   };
 
   return (
     <SafeAreaView className="flex-1 bg-background p-5">
+      <CreateSubscriptionModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onSubmit={handleSubscriptionCreated}
+      />
       <FlatList
         ListHeaderComponent={() => (
           <>
