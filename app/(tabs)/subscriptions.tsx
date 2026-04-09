@@ -3,6 +3,7 @@ import { FlatList, KeyboardAvoidingView, Platform, Text, TextInput, View } from 
 import React, { useState } from "react";
 import { styled } from "nativewind";
 import { SafeAreaView as RNSafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import SubscriptionCard from "@/components/SubscriptionCard";
 import { useSubscriptions } from "@/context/SubscriptionsContext";
 
@@ -31,13 +32,14 @@ const Subscriptions = () => {
       >
       <Text className="text-2xl font-sans-bold text-foreground mb-4">Subscriptions</Text>
 
-      <View className="flex-row items-center bg-card rounded-2xl px-4 mb-5 h-12">
+      <View className="flex-row items-center bg-muted rounded-2xl px-4 mb-5 h-14 gap-3">
+        <Ionicons name="search-outline" size={20} color="rgba(0,0,0,0.4)" />
         <TextInput
           value={search}
           onChangeText={setSearch}
           placeholder="Search subscriptions..."
-          placeholderTextColor="#888"
-          className="flex-1 text-foreground text-sm"
+          placeholderTextColor="rgba(0,0,0,0.4)"
+          className="flex-1 text-foreground text-base font-sans-medium"
           returnKeyType="search"
           clearButtonMode="while-editing"
         />
