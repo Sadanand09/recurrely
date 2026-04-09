@@ -1,15 +1,18 @@
 import "@/global.css";
-import { FlatList, KeyboardAvoidingView, Platform, Text, TextInput, View } from "react-native";
+import { FlatList, KeyboardAvoidingView, Platform, Text, TextInput, View, Image, Pressable } from "react-native";
 import React, { useState } from "react";
 import { styled } from "nativewind";
 import { SafeAreaView as RNSafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import SubscriptionCard from "@/components/SubscriptionCard";
 import { useSubscriptions } from "@/context/SubscriptionsContext";
+import { icons } from "@/constants/icons";
 
 const SafeAreaView = styled(RNSafeAreaView);
 
 const Subscriptions = () => {
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [expandedSubscriptionId, setExpandedSubscriptionId] = useState<string | null>(null);
   const { subscriptions } = useSubscriptions();
@@ -30,7 +33,15 @@ const Subscriptions = () => {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="flex-1"
       >
-      <Text className="text-2xl font-sans-bold text-foreground mb-4">Subscriptions</Text>
+      <View className="insights-header">
+        <Pressable className="insights-nav-btn" onPress={() => router.navigate("/(tabs)")}>
+          <Image source={icons.back} className="size-5" />
+        </Pressable>
+        <Text className="insights-title">Subscriptions</Text>
+        <Pressable className="insights-nav-btn">
+          <Image source={icons.menu} className="size-5" />
+        </Pressable>
+      </View>
 
       <View className="flex-row items-center bg-muted rounded-2xl px-4 mb-5 h-14 gap-3">
         <Ionicons name="search-outline" size={20} color="rgba(0,0,0,0.4)" />

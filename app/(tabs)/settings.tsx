@@ -4,13 +4,16 @@ import { usePostHog } from "posthog-react-native";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView as RNSafeAreaView } from "react-native-safe-area-context";
 import { styled } from "nativewind";
+import { useRouter } from "expo-router";
 import { useSubscriptions } from "@/context/SubscriptionsContext";
 import { formatCurrency } from "@/lib/utils";
 import images from "@/constants/images";
+import { icons } from "@/constants/icons";
 
 const SafeAreaView = styled(RNSafeAreaView);
 
 const Settings = () => {
+  const router = useRouter();
   const { signOut } = useClerk();
   const { user } = useUser();
   const posthog = usePostHog();
@@ -53,16 +56,15 @@ const Settings = () => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ padding: 20, paddingBottom: 120 }}
       >
-        <Text
-          style={{
-            fontSize: 24,
-            fontFamily: "sans-bold",
-            color: "#081126",
-            marginBottom: 20,
-          }}
-        >
-          Settings
-        </Text>
+        <View className="insights-header">
+          <Pressable className="insights-nav-btn" onPress={() => router.navigate("/(tabs)")}>
+            <Image source={icons.back} className="size-5" />
+          </Pressable>
+          <Text className="insights-title">Settings</Text>
+          <Pressable className="insights-nav-btn">
+            <Image source={icons.menu} className="size-5" />
+          </Pressable>
+        </View>
 
         {/* Profile Card */}
         <View

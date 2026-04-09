@@ -417,4 +417,64 @@
     .category-chip-text-active {
         @apply text-accent;
     }
+
+    .insights-header {
+        @apply mb-5 flex-row items-center justify-between;
+    }
+
+    .insights-nav-btn {
+        @apply size-11 items-center justify-center rounded-full border border-border;
+    }
+
+    .insights-title {
+        @apply text-2xl font-sans-bold text-primary;
+    }
+
+    .insights-chart-card {
+        @apply rounded-3xl bg-muted p-4;
+    }
+
+    .insights-expense-card {
+        @apply my-1 rounded-3xl border border-border p-5;
+    }
+
+    .insights-expense-label {
+        @apply text-xl font-sans-bold text-primary;
+    }
+
+    .insights-expense-amount {
+        @apply text-xl font-sans-bold text-primary;
+    }
+
+    .insights-expense-month {
+        @apply mt-1 text-sm font-sans-medium text-muted-foreground;
+    }
+
+    .insights-expense-change {
+        @apply mt-1 text-sm font-sans-semibold text-success;
+    }
+
+    .insights-history-card {
+        @apply flex-row items-center rounded-3xl p-5;
+    }
+
+    .insights-history-icon {
+        @apply size-14 rounded-2xl;
+    }
+
+    .insights-history-name {
+        @apply text-lg font-sans-bold text-primary;
+    }
+
+    .insights-history-date {
+        @apply text-sm font-sans-medium text-muted-foreground;
+    }
+
+    .insights-history-price {
+        @apply text-lg font-sans-bold text-primary;
+    }
+
+    .insights-history-billing {
+        @apply text-sm font-sans-medium text-muted-foreground;
+    }
 }
